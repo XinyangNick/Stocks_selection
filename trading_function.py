@@ -98,8 +98,8 @@ def Stage2_Confirmed_Criteria(history:pd.DataFrame,
     #2
     if MA(history, 150) >= MA(history, 200):
         Counter.append(2)
-    #3
-    slope = (history['MA200'][-1] - history['MA200'][-MA200UP]) / MA200UP
+    #3 (history['MA200'][-1] - history['MA200'][-MA200UP]) / MA200UP
+    slope = (MA(history, 200) - MA(history, 200, -MA200UP)) / MA200UP
     if slope > 0:
         Counter.append(3)
     #4

@@ -23,14 +23,36 @@ def MA_Adding(history:pd.DataFrame, lst=[20, 50, 100, 150, 200]):
         history['MA'+str(N)] = history['Close'].rolling(N).sum() / N
 
 
-def MA(history:pd.DataFrame, N):
+
+def MA(history: pd.DataFrame, N: int, Day: int = -1):
     """
-    Return the current Moving Average N
+    Returns the Moving Average over N periods for the specified Day in the 'history' DataFrame.
+    
+    Parameters:
+    - history: DataFrame with at least a 'Close' column for closing prices.
+    - N: The window size for calculating the moving average.
+    - Day: The index (negative or positive) of the day for which to return the moving average.
+    
+    Returns:
+    - The moving average value for the given day.
     """
-    col = 'MA'+str(N)
-    if col not in history.columns:
-        MA_Adding(history, [N])
-    return history[col][-1]
+    close_price = history['Close']
+    
+    # Handle if Day is negative, to count from the end of the series
+    target_day = Day if Day >= 0 else len(close_price) + Day
+    
+    # Ensure the target day is within a valid range
+    if target_day < N - 1:
+        raise ValueError(f"Not enough data to compute a {N}-period moving average on day {Day}.")
+    
+    # Slice the relevant portion of the close_price for the given day and N periods before it
+    relevant_data = close_price.iloc[target_day - N + 1 : target_day + 1]
+    
+    # Calculate the moving average only for the sliced data
+    moving_avg = relevant_data.mean()
+    
+    return moving_avg
+
 
 
 def Stage2_Confirmed_Criteria(history:pd.DataFrame, 

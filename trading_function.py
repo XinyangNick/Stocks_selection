@@ -114,7 +114,11 @@ def RS_rating(hisotry:pd.DataFrame, benchmark:pd.DataFrame):
 
 
 #Plot
-def Kline_Plot(Ticker:yf.Ticker, data:pd.DataFrame):
+def Kline_Plot(Ticker:yf.Ticker, data:pd.DataFrame, days:int=250):
+    """
+    graph caddle chart from -days to now
+    """
+    data = data[-days:]
     fig = make_subplots(rows=2, cols=1, shared_xaxes=True, 
                     vertical_spacing=0.03, subplot_titles=(f'Candlestick Chart for {Ticker}', 'Volume'), 
                     row_width=[0.2, 0.7])

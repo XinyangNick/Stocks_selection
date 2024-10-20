@@ -38,7 +38,7 @@ def save_raw(Ticker:str, path:str=PATH):
     """
     quarter_income_df, annual_income_df = get_income_statement(Ticker)
     quarter_EPS_df, annual_EPS_df = get_EPS(Ticker)
-    current_date = datetime.now().strftime("%Y-%m-%d")
+    current_date = datetime.now().strftime("%Y-%m")
     if path is None:
         path = os.getcwd()
     path = os.path.join(path, 'data', current_date)

@@ -53,8 +53,8 @@ def MA(history: pd.DataFrame, N: int, Day: int = -1):
 
 
 
-def Stage2_Confirmed_Criteria(history:pd.DataFrame, 
-                              Benchmark:pd.DataFrame, 
+def Stage2_Confirmed_Criteria(Ticker:str, 
+                              Benchmark:str=None, 
                               MA200UP:int=30, 
                               LOW52UP:int=30,
                               RS_score:int=70):
@@ -85,6 +85,13 @@ def Stage2_Confirmed_Criteria(history:pd.DataFrame,
     generally be the case with the better selections. 
 
     """
+
+    history = Stock_Data(Ticker)
+    if Benchmark is None:
+        Benchmark = Benchmark_Data()
+    else:
+        Benchmark = Benchmark_Data(Benchmark)
+
     high52week = history['Close'][-250:].max()
     low52week = history['Close'][-250:].min()
     last_price = history['Close'][-1]
@@ -113,13 +120,11 @@ def Stage2_Confirmed_Criteria(history:pd.DataFrame,
     if last_price >= high52week * 0.75:
         Counter.append(7)
     #8
-    if RS_rating(history, Benchmark) >= RS_score:
+    RS_score = RS_rating(history, Benchmark)
+    if RS_score >= RS_score:
         Counter.append(8)  
     # Check if meet all 8 Criteria
-    if len(Counter) == 8:
-        return True, Counter
-    else:
-        return False, Counter
+    return len(Counter) == 8, Counter, RS_score
 
 
 #The RS rating >=70 is great
@@ -133,5 +138,5 @@ def RS_rating(hisotry:pd.DataFrame, benchmark:pd.DataFrame):
     return rs_score
 
 
-
+Stage2_Confirmed_Criteria('IRMD')
 

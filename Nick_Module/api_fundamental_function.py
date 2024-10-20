@@ -50,4 +50,4 @@ def save_raw(Ticker:str, path:str=PATH):
     annual_EPS_df.to_csv(base_path + '_annual_EPS.csv')
 
 
-save_raw('TXRH')
+save_raw('IRMD')

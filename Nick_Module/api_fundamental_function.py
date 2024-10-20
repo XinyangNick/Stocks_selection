@@ -7,7 +7,7 @@ import os
 
 #API = 'L9YXXXRSY2IFLQQ3'
 API = '2ID6DFGA46EO9NEI'
-PATH = '/Users/nick0o0o0/Library/Mobile Documents/com~apple~CloudDocs/gxyfile/Trading'
+PATH = '/Users/nick0o0o0/Library/Mobile Documents/com~apple~CloudDocs/gxyfile/Trading/Stocks_selection'
 
 def get_EPS(Ticker:str)->pd.DataFrame:
     """

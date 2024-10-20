@@ -138,5 +138,6 @@ def RS_rating(hisotry:pd.DataFrame, benchmark:pd.DataFrame):
     return rs_score
 
 
-Stage2_Confirmed_Criteria('IRMD')
+#example
+#Stage2_Confirmed_Criteria('IRMD')
 

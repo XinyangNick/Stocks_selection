@@ -1,15 +1,78 @@
 import pandas as pd
-import numpy as np
 import yfinance as yf
+import statsmodels.api as sm
+
+DEFULT_START_DATE = '2000-01-01'
+CURRENT_DATE = pd.Timestamp.now().strftime('%Y-%m-%d')
 
 
 def Stock_Data(Ticker:str, period:str='2y'):
     data = yf.Ticker(Ticker).history(period)
     return data
 
-def Benchmark_Data(benchmark:str='^GSPC'):
-    SP500 = yf.download(benchmark, period='2y')
+def Industry_Data(Ticker:str, period:str='2y'):
+    ticker_info = yf.Ticker(Ticker).info
+    industry_key = ticker_info.get('industryKey')
+    if not industry_key:
+        raise ValueError(f"Industry data not found for ticker {Ticker}")
+    industry = yf.Industry(industry_key)
+    industry_ticker = industry.ticker
+    # Fetch historical data for the industry ticker
+    data = industry_ticker.history(period=period)
+    return data
+
+def Benchmark_Data(benchmark:str='^GSPC', start_date:str=DEFULT_START_DATE, end_date:str=CURRENT_DATE):
+    if start_date is None or end_date is None:
+        SP500 = yf.download(benchmark)
+    else:
+        SP500 = yf.download(benchmark, start=start_date, end=end_date)
     return SP500
+
+def Risk_Free_Data(Ticker:str='^TNX', start_date:str=DEFULT_START_DATE, end_date:str=CURRENT_DATE):
+    """
+    Return the risk free rate using the 10-year US Treasury yield.
+    """
+    if start_date is None or end_date is None:
+        treasury_data = yf.download(Ticker)
+    else:
+        treasury_data = yf.download(Ticker, start=start_date, end=end_date)
+    return treasury_data
+
+def Stock_Returns(Ticker:str, period:str='2y', n:int=1):
+    """
+    Date is ascending order
+    n is the number of days of shift to calculate the returns
+    Return the stock return
+    """
+    data = Stock_Data(Ticker, period)
+    data['Stock_Return'] = (data['Close']-data['Close'].shift(n))/data['Close'].shift(n)
+    return data
+
+def Industry_Returns(Ticker:str, period:str='2y', n:int=1):
+    """
+    n is the number of days of shift to calculate the returns
+    Return the industry return
+    """
+    data = Industry_Data(Ticker, period)
+    data['Industry_Return'] = (data['Close']-data['Close'].shift(n))/data['Close'].shift(n)
+    return data
+
+def Benchmark_Returns(benchmark:str='^GSPC', start_date:str=DEFULT_START_DATE, end_date:str=CURRENT_DATE, n:int=1):
+    """
+    n is the number of days of shift to calculate the returns
+    Reutrn the benchmark return
+    """
+    data = Benchmark_Data(benchmark, start_date, end_date)
+    data['Benchmark_Return'] = (data['Adj Close']-data['Adj Close'].shift(n))/data['Adj Close'].shift(n)
+    return data
+
+def Risk_Free_Return(Ticker:str='^TNX', start_date:str=DEFULT_START_DATE, end_date:str=CURRENT_DATE, n:int=1):
+    """
+    Return the risk free rate using the 10-year US Treasury yield.
+    """
+    data = Risk_Free_Data(Ticker, start_date, end_date)
+    data['Risk_Free_Return'] = ((data['Adj Close']-data['Adj Close'].shift(n))/data['Adj Close'].shift(n))/100
+    return data
 
 
 def MA_Adding(history:pd.DataFrame, lst=[20, 50, 100, 150, 200]):
@@ -21,8 +84,7 @@ def MA_Adding(history:pd.DataFrame, lst=[20, 50, 100, 150, 200]):
         history['MA'+str(N)] = history['Close'].rolling(N).sum() / N
 
 
-
-def MA(history: pd.DataFrame, N: int, Day: int = -1):
+def MA(history: pd.DataFrame, N: int, Day: int = -1)->float:
     """
     Returns the Moving Average over N periods for the specified Day in the 'history' DataFrame.
     
@@ -57,7 +119,7 @@ def Stage2_Confirmed_Criteria(Ticker:str,
                               Benchmark:str=None, 
                               MA200UP:int=30, 
                               LOW52UP:int=30,
-                              RS_score:int=70):
+                              RS_score:int=70)->tuple:
     """
     MA200UP: is the number of day that MA200 is uptrend
     (should be at least 30days)
@@ -131,7 +193,7 @@ def Stage2_Confirmed_Criteria(Ticker:str,
 
 
 #The RS rating >=70 is great
-def RS_rating(hisotry:pd.DataFrame, benchmark:pd.DataFrame):
+def RS_rating(hisotry:pd.DataFrame, benchmark:pd.DataFrame)->float:
     """
     Return the RS ratio
     """
@@ -141,6 +203,64 @@ def RS_rating(hisotry:pd.DataFrame, benchmark:pd.DataFrame):
     return rs_score
 
 
+def Regression_Analysis(Ticker:str, 
+                        Benchmark:str='^GSPC', 
+                        Risk_free:str='^TNX', 
+                        period:str='max',
+                        start_date:str=None, 
+                        end_date:str=None, 
+                        n:int=1):
+    """
+    Ticker: is the stock ticker
+    Benchmark: is the benchmark ticker
+    Risk_free: is the risk free ticker
+    Peiod: is the time period for the Stock, Industry, Benchmark
+    Start_date: is the start date for the Risk_free rate
+    End_date: is the end date for the Risk_free rate
+    n: is the number of days of shift to calculate the returns
+
+    Return the regression analysis
+    """
+    Stock_R = Stock_Returns(Ticker, period, n)['Stock_Return']
+    Industry_R= Industry_Returns(Ticker, period, n)['Industry_Return']
+    Benchmark_R = Benchmark_Returns(Benchmark, start_date, end_date, n)['Benchmark_Return']
+    Risk_free_r = Risk_Free_Return(Risk_free, start_date, end_date, n)['Risk_Free_Return']
+
+    #Change the date to the same format
+    Stock_R.index = Stock_R.index.tz_localize(None)
+    Industry_R.index = Industry_R.index.tz_localize(None)
+    Benchmark_R.index = Benchmark_R.index.tz_localize(None)
+    Risk_free_r.index = Risk_free_r.index.tz_localize(None)
+
+    # Merge the data
+    data = pd.merge(Stock_R, Industry_R, how='inner', left_index=True, right_index=True)
+    data = pd.merge(data, Benchmark_R, how='inner', left_index=True, right_index=True)
+    data = pd.merge(data, Risk_free_r, how='inner', left_index=True, right_index=True)
+    data.dropna(inplace=True)
+    
+    Rf = data['Risk_Free_Return']
+    Rm = data['Benchmark_Return']
+    Ri = data['Industry_Return']
+    Rs = data['Stock_Return']
+    data['Ri - Rf'] = Ri - Rf
+    data['Rm - Rf'] = Rm - Rf
+
+    print(data.head(5))
+
+    # Regression Analysis
+    X1 = sm.add_constant(data['Ri - Rf']) # Industry
+    X2 = sm.add_constant(data['Rm - Rf']) # Benchmark
+    
+    Y = Rs - Rf # Stock
+    model1 = sm.OLS(Y, X1).fit() # Industry Regression
+    model2 = sm.OLS(Y, X2).fit() # Benchmark Regression
+
+    return model1.summary(), model2.summary()
+
+    
+
 #example
 #print(Stage2_Confirmed_Criteria('TXRH'))
+#Regression_Analysis('HROW')
+
 

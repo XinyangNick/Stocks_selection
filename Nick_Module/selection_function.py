@@ -92,9 +92,12 @@ def Stage2_Confirmed_Criteria(Ticker:str,
     else:
         Benchmark = Benchmark_Data(Benchmark)
 
-    high52week = history['Close'][-250:].max()
-    low52week = history['Close'][-250:].min()
-    last_price = history['Close'][-1]
+    if len(history) < 250:
+        raise ValueError("Not enough data to compute 52-week high/low and last price.")
+    
+    high52week = history['Close'].iloc[-250:].max()
+    low52week = history['Close'].iloc[-250:].min()
+    last_price = history['Close'].iloc[-1]
 
     Counter = []
     #1
@@ -139,5 +142,5 @@ def RS_rating(hisotry:pd.DataFrame, benchmark:pd.DataFrame):
 
 
 #example
-#Stage2_Confirmed_Criteria('IRMD')
+#print(Stage2_Confirmed_Criteria('TXRH'))
 

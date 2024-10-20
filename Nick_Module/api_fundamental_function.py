@@ -49,5 +49,3 @@ def save_raw(Ticker:str, path:str=PATH):
     quarter_EPS_df.to_csv(base_path + '_quarter_EPS.csv')
     annual_EPS_df.to_csv(base_path + '_annual_EPS.csv')
 
-
-save_raw('IRMD')

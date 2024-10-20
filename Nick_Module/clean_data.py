@@ -28,15 +28,15 @@ def clean_quarterly_fundamental(Ticker:str, current_month:str=CURRENT_MONTH, n:i
     merge_df = merge_df.sort_values(by='fiscalDateEnding', ascending=False)
     merge_df['quarter'] = merge_df['fiscalDateEnding'].dt.to_period('Q').astype(str).str.replace(' ', '')
     # add percentage change of EPS
-    merge_df['EPS_YOY_pct_change'] = merge_df['reportedEPS'].pct_change(periods=n).replace(0, 1)
+    merge_df['EPS_YOY_pct_change'] = merge_df['reportedEPS'].pct_change(periods=n, fill_method=None).replace(0, 1)
     # add percentage change of revenue
-    merge_df['revenue_YOY_pct_change'] = merge_df['totalRevenue'].pct_change(periods=n).replace(0, 1)
+    merge_df['revenue_YOY_pct_change'] = merge_df['totalRevenue'].pct_change(periods=n, fill_method=None).replace(0, 1)
     # add percentage change of net income
-    merge_df['netIncome_YOY_pct_change'] = merge_df['netIncome'].pct_change(periods=n).replace(0, 1)
+    merge_df['netIncome_YOY_pct_change'] = merge_df['netIncome'].pct_change(periods=n, fill_method=None).replace(0, 1)
     # add net profit margin
     merge_df['netProfitMargin'] = merge_df['netIncome'] / merge_df['totalRevenue']
     # add percentage change of net profit margin
-    merge_df['netProfitMargin_YOY_pct_change'] = merge_df['netProfitMargin'].pct_change(periods=n).replace(0, 1)
+    merge_df['netProfitMargin_YOY_pct_change'] = merge_df['netProfitMargin'].pct_change(periods=n, fill_method=None).replace(0, 1)
     # Convert percentage changes to percentage format (multiply by 100) and round to no decimal
     merge_df['EPS_YOY_pct_change'] = (merge_df['EPS_YOY_pct_change'] * 100).round(0).apply(lambda x: f"{x:+}")
     merge_df['revenue_YOY_pct_change'] = (merge_df['revenue_YOY_pct_change'] * 100).round(0).apply(lambda x: f"{x:+}")

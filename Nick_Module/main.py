@@ -1,6 +1,8 @@
 import graphing_function as gf
 import selection_function as sf
-import api_fundamental_function as aff
+import clean_data as cd
 
-
-gf.graph_together('HROW')
+Ticker = 'IRMD'
+print(sf.Stage2_Confirmed_Criteria(Ticker))
+gf.graph_move_together(Ticker, time='1y')
+cd.generate_fundamental(Ticker)

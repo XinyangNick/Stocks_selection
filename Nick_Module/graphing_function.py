@@ -114,3 +114,4 @@ def graph_together(Ticker: str, Benchmark: str='^GSPC', time: str='1y'):
     Kline_Plot(Ticker, time)
     Industry_Plot(Ticker, time)
     Benchmark_Plot(Benchmark, time)
+

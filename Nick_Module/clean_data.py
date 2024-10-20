@@ -3,7 +3,7 @@ from datetime import datetime
 import os
 
 PATH = '/Users/nick0o0o0/Library/Mobile Documents/com~apple~CloudDocs/gxyfile/Trading/Stocks_selection/data'
-PATH2 = '/Users/nick0o0o0/Library/Mobile Documents/com~apple~CloudDocs/gxyfile/Trading/Stocks_selection/report'
+PATH2 = '/Users/nick0o0o0/Library/Mobile Documents/com~apple~CloudDocs/gxyfile/Trading/Stocks_selection'
 CURRENT_MONTH = datetime.now().strftime('%Y-%m')
 
 def clean_quarterly_fundamental(Ticker:str, current_month:str=CURRENT_MONTH, n:int=4)->pd.DataFrame:
@@ -53,16 +53,18 @@ def clean_quarterly_fundamental(Ticker:str, current_month:str=CURRENT_MONTH, n:i
 
 def generate_fundamental(Ticker:str, current_month:str=CURRENT_MONTH, n:int=4)->pd.DataFrame:
     data_file_name = f'{Ticker}_quarter_income.csv'
-    if data_file_name not in os.listdir(f'{PATH}/{current_month}'):
-        print(f'{data_file_name} not found in {PATH}/{current_month}')
+    data_file_name2 = f'{Ticker}_quarter_EPS.csv'
+
+    if (data_file_name not in os.listdir(f'{PATH}/{current_month}')) or (data_file_name2 not in os.listdir(f'{PATH}/{current_month}')):
+        print(f'{data_file_name} or {data_file_name2} not found in {PATH}/{current_month}')
         return None
     else:
         df1, df2 = clean_quarterly_fundamental(Ticker, current_month, n)
 
-        if not os.path.exists(f'{PATH2}/{current_month}'):
-            os.makedirs(f'{PATH2}/{current_month}', exist_ok=True)
-        df1.to_csv(f'{PATH2}/{current_month}/{Ticker}_bigfundamental.csv', index=False)
-        df2.to_csv(f'{PATH2}/{current_month}/{Ticker}_smallfundamental.csv', index=False)
+        if not os.path.exists(f'{PATH2}/report/{current_month}'):
+            os.makedirs(f'{PATH2}/report/{current_month}', exist_ok=True)
+        df1.to_csv(f'{PATH2}/report/{current_month}/{Ticker}_bigfundamental.csv', index=False)
+        df2.to_csv(f'{PATH2}/report/{current_month}/{Ticker}_smallfundamental.csv', index=False)
         return df1, df2
     
 

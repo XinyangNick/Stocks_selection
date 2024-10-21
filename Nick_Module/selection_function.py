@@ -71,7 +71,7 @@ def Risk_Free_Return(Ticker:str='^TNX', start_date:str=DEFULT_START_DATE, end_da
     Return the risk free rate using the 10-year US Treasury yield.
     """
     data = Risk_Free_Data(Ticker, start_date, end_date)
-    data['Risk_Free_Return'] = ((data['Adj Close']-data['Adj Close'].shift(n))/data['Adj Close'].shift(n))/100
+    data['Risk_Free_Return'] = data['Adj Close']/100
     return data
 
 
@@ -238,20 +238,22 @@ def Regression_Analysis(Ticker:str,
     data = pd.merge(data, Risk_free_r, how='inner', left_index=True, right_index=True)
     data.dropna(inplace=True)
     
-    Rf = data['Risk_Free_Return']
+    data['Risk_Free_Return_daily'] = (1 + data['Risk_Free_Return']) ** (1/252) - 1
+    #Change annul return to daily return
+    Rf = data['Risk_Free_Return_daily']
     Rm = data['Benchmark_Return']
     Ri = data['Industry_Return']
     Rs = data['Stock_Return']
+    data['R_stock-Rf'] = Rs - Rf
     data['Ri - Rf'] = Ri - Rf
     data['Rm - Rf'] = Rm - Rf
-
-    print(data.head(5))
+    print(data)
 
     # Regression Analysis
     X1 = sm.add_constant(data['Ri - Rf']) # Industry
     X2 = sm.add_constant(data['Rm - Rf']) # Benchmark
     
-    Y = Rs - Rf # Stock
+    Y = data['R_stock-Rf'] # Stock
     model1 = sm.OLS(Y, X1).fit() # Industry Regression
     model2 = sm.OLS(Y, X2).fit() # Benchmark Regression
 

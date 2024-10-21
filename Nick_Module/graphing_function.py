@@ -121,8 +121,8 @@ def graph_move_together(Ticker: str, benchmark: str='^GSPC', time: str = '5y'):
     
     Parameters:
     kline_data (pd.DataFrame): Data for the Kline graph, with volume
-    data1 (pd.DataFrame): Data for the first graph.
-    data2 (pd.DataFrame): Data for the second graph.
+    data1 (pd.DataFrame): Data for the industry graph.
+    data2 (pd.DataFrame): Data for the benchmark graph.
     
     """
     klinedata = yf.Ticker(Ticker).history(period=f'{time}')

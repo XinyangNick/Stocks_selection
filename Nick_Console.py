@@ -87,7 +87,7 @@ while Choice != '':
     elif Choice == '4':
         cd.generate_fundamental(Ticker)
     elif Choice == '5':
-        gf.graph_move_together(Ticker)
+        gf.graph_move_together(Ticker, time='1y')
     elif Choice == '6':
         Ticker = input('Enter the ticker: ')
     elif Choice == '7':

@@ -1,6 +1,6 @@
 import pandas as pd
 import yfinance as yf
-import selection_function as sf
+from Nick_Module import selection_function as sf
 import os
 
 
@@ -33,7 +33,7 @@ Remain_ticker = Big_tickers[start_index:]
 # Check Stage 2 Confirm Criteria
 counter = 0
 for ticker in Remain_ticker:
-    if counter >= 50:
+    if counter >= 3000:
         break
     try:
         result = sf.Stage2_Confirmed_Criteria(Ticker=ticker, start_date=START_DATE, end_date=END_DATE)

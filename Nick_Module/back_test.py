@@ -1,20 +1,8 @@
 import yfinance as yf
+import pandas as pd
+import selection_function as sf
 
-def get_price_dataframe(ticker, start_date, end_date):
-    """
-    Fetches historical price data for a given ticker between start_date and end_date.
 
-    Parameters:
-    ticker (str): The ticker symbol of the stock.
-    start_date (str): The start date in the format 'YYYY-MM-DD'.
-    end_date (str): The end date in the format 'YYYY-MM-DD'.
-
-    Returns:
-    pandas.DataFrame: A dataframe containing the historical price data.
-    """
-    stock = yf.Ticker(ticker)
-    df = stock.history(start=start_date, end=end_date)
-    return df
 
 def calculate_macd(df, short_window=12, long_window=26, signal_window=9):
     """
@@ -35,43 +23,55 @@ def calculate_macd(df, short_window=12, long_window=26, signal_window=9):
     df['Signal_Line'] = df['MACD'].ewm(span=signal_window, adjust=False).mean()
     return df
 
-def backtest_macd_strategy(df, initial_balance=10000):
+def backtest_macd_strategy(df, initial_cash=10000):
     """
     Backtests a simple MACD strategy where you buy when MACD > 0 and sell when MACD < 0.
-    Records the balance over time in a new column and allows the balance to be negative.
+    Records the balance, cash, and position over time in new columns.
 
     Parameters:
     df (pandas.DataFrame): Dataframe containing the historical price data and MACD values.
-    initial_balance (float): The initial balance for the backtest.
+    initial_cash (float): The initial cash for the backtest.
 
     Returns:
-    pandas.DataFrame: The dataframe with an additional column for balance over time.
+    pandas.DataFrame: The dataframe with additional columns for balance, cash, and position over time.
     """
-    balance = initial_balance
-    position = 0  # 0 means no position, positive means holding the stock, negative means shorting the stock
-    df['Balance'] = initial_balance
+    cash = initial_cash
+    position = 0  # Number of shares held
+    df['Cash'] = initial_cash
+    df['Position'] = 0
+    df['Balance'] = initial_cash
 
-    for i in range(1, len(df)):
+
+    df['Cash'] = df['Cash'].astype(float)
+    df['Balance'] = df['Balance'].astype(float)
+    df.reset_index(inplace=True)
+
+    for i, row in df.iterrows():
+        if i == 0:
+            continue  # Skip the first row
+        cash = df.at[i-1, 'Cash']  # Update cash from the previous row
+        position = df.at[i-1, 'Position']  # Update position from the previous row
+
         if df['MACD'].iloc[i] > 0 and df['MACD'].iloc[i-1] <= 0:
             # Buy signal
-            if position <= 0:
-                balance += position * df['Close'].iloc[i]  # Close any short position
-                position = balance / df['Close'].iloc[i]
-                balance = 0
+            if cash > 0:
+                position = cash // df['Close'].iloc[i]
+                cash = cash - position * df['Close'].iloc[i]
         elif df['MACD'].iloc[i] < 0 and df['MACD'].iloc[i-1] >= 0:
             # Sell signal
-            if position >= 0:
-                balance += position * df['Close'].iloc[i]  # Close any long position
-                position = -balance / df['Close'].iloc[i]
-                balance = 0
-        
-        # Record the balance at each step
-        df['Balance'].iloc[i] = balance if position == 0 else balance + position * df['Close'].iloc[i]
+            if position > 0:
+                cash = cash + position * df['Close'].iloc[i]
+                position = 0
 
-    # If still holding a position at the end, close it
-    if position != 0:
-        balance += position * df['Close'].iloc[-1]
-        df['Balance'].iloc[-1] = balance
+        # Calculate balance
+        balance = cash + position * df['Close'].iloc[i]
+        if balance < 0:
+            break  # Stop the backtest if balance is negative
+
+        # Record the values
+        df.at[i, 'Cash'] = cash
+        df.at[i, 'Position'] = position
+        df.at[i, 'Balance'] = balance
 
     return df
 
@@ -87,15 +87,16 @@ def calculate_returns(df):
     pandas.DataFrame: The dataframe with an additional column for returns.
     """
     df['Returns'] = df['Balance'].pct_change().fillna(0)
-    return df
+    df['Cumulative_Returns'] = (1 + df['Returns']).cumprod() - 1
+    return df['Cumulative_Returns'].iloc[-1]  # Return the final cumulative return
+
 
 # Example usage
 if __name__ == "__main__":
-    ticker = "APVO"
-    start_date = "2013-03-01"
-    end_date = "2017-12-01"
-    df = get_price_dataframe(ticker, start_date, end_date)
+    ticker = "AAPL"
+    start_date = "2020-01-01"
+    end_date = "2020-12-01"
+    df = yf.download(ticker, start=start_date, end=end_date)
     df = calculate_macd(df)
-    final_balance = backtest_macd_strategy(df)
-    print(df)
-    print(calculate_returns(df))
+    final_df = backtest_macd_strategy(df)
+    final_df

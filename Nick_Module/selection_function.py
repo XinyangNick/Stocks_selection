@@ -266,10 +266,10 @@ def Regression_Analysis(Ticker:str,
 
     
 
-#example
-print(Stage2_Confirmed_Criteria('TXRH',start_date='2010-12-01', end_date='2015-11-1'))
-#Regression_Analysis('HROW')
+# #example
+# print(Stage2_Confirmed_Criteria('TXRH',start_date='2010-12-01', end_date='2015-11-1'))
+# #Regression_Analysis('HROW')
 
 
-x = Stock_Data('AAPL', start_date='2010-12-01', end_date='2015-11-1') # Example usage of the Stock_Data function
-print(x)
+# x = Stock_Data('AAPL', start_date='2010-12-01', end_date='2015-11-1') # Example usage of the Stock_Data function
+# print(x)

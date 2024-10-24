@@ -6,8 +6,11 @@ DEFULT_START_DATE = '2000-01-01'
 CURRENT_DATE = pd.Timestamp.now().strftime('%Y-%m-%d')
 
 
-def Stock_Data(Ticker:str, period:str='2y'):
-    data = yf.Ticker(Ticker).history(period)
+def Stock_Data(Ticker:str, period:str='2y', start_date:str=None, end_date:str=None):
+    if start_date is None or end_date is None:
+        data = yf.Ticker(Ticker).history(period)
+    else:
+        data = yf.Ticker(Ticker).history(start=start_date, end=end_date)
     return data
 
 def Industry_Data(Ticker:str, period:str='2y'):
@@ -117,6 +120,8 @@ def MA(history: pd.DataFrame, N: int, Day: int = -1)->float:
 
 def Stage2_Confirmed_Criteria(Ticker:str, 
                               Benchmark:str=None, 
+                              start_date:str=None,
+                              end_date:str=None,
                               MA200UP:int=30, 
                               LOW52UP:int=30,
                               RS_score:int=70)->tuple:
@@ -148,11 +153,11 @@ def Stage2_Confirmed_Criteria(Ticker:str,
 
     """
 
-    history = Stock_Data(Ticker)
+    history = Stock_Data(Ticker, start_date=start_date, end_date=end_date)
     if Benchmark is None:
-        Benchmark = Benchmark_Data()
+        Benchmark = Benchmark_Data(start_date=start_date, end_date=end_date)
     else:
-        Benchmark = Benchmark_Data(Benchmark)
+        Benchmark = Benchmark_Data(Benchmark, start_date=start_date, end_date=end_date)
 
     if len(history) < 250:
         raise ValueError("Not enough data to compute 52-week high/low and last price.")
@@ -262,7 +267,9 @@ def Regression_Analysis(Ticker:str,
     
 
 #example
-#print(Stage2_Confirmed_Criteria('TXRH'))
+print(Stage2_Confirmed_Criteria('TXRH',start_date='2010-12-01', end_date='2015-11-1'))
 #Regression_Analysis('HROW')
 
 
+x = Stock_Data('AAPL', start_date='2010-12-01', end_date='2015-11-1') # Example usage of the Stock_Data function
+print(x)

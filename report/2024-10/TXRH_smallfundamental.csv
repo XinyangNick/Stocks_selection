@@ -1,4 +1,5 @@
 fiscalDateEnding,quarter,reportedEPS,EPS_YOY_pct_change,estimatedEPS,surprise,totalRevenue,revenue_YOY_pct_change,netIncome,netIncome_YOY_pct_change,netProfitMargin,netProfitMargin_YOY_pct_change
+2024-09-30,2024Q3,1.26,+33.0,1.32,-0.06,,+nan,,+nan,,+nan
 2024-06-30,2024Q2,1.79,+47.0,1.64,0.15,1341202000.0,+15.0,120141000.0,+46.0,0.08957711068131423,+28.0
 2024-03-31,2024Q1,1.69,+32.0,1.63,0.06,1320848000.0,+13.0,113206000.0,+31.0,0.08570706091844027,+16.0
 2023-12-31,2023Q4,1.08,+21.0,1.06,0.02,1164393000.0,+16.0,72430000.0,+21.0,0.06220408401630721,+5.0
